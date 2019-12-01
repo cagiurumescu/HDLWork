@@ -20,7 +20,7 @@ reg [23:0] grb; // {7..0, 7..0, 7..0}
 reg [23:0] on_count; // 2^23*10 ns
 reg hi_en;
 
-localparam [5:0] LED_COUNT = 6'd40;
+localparam [5:0] LED_COUNT = 6'd54;
 
 // POR
 always @(posedge sysclk) begin
