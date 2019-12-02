@@ -26,7 +26,7 @@ assign jc[2] = my_rand;
 
 always @(negedge jc[3]) begin
    my_rand <= $random;
-   my_rand <= 1'b1;
+   //my_rand <= 1'b1;
 end
 
 

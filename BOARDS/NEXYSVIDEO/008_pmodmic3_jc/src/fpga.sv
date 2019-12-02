@@ -49,6 +49,9 @@ typedef enum logic [7:0] {
 } fsm_state_t;
 fsm_state_t fsm_state = ST_IDLE;
 
+reg [15:0] spi_data;
+reg [15:0] spi_data_latched;
+
 always @(posedge sysclk) begin
    clk_count_onehot <= {clk_count_onehot[6:0], 1'b0};
    case (fsm_state)
@@ -61,7 +64,7 @@ always @(posedge sysclk) begin
       ST_PWRUP_CSN_LO: begin
          spi_cs_n <= 1'b0;
          spi_sclk <= 1'b1;
-         if (clk_count_onehot[3]) begin
+         if (clk_count_onehot[3]) begin // with 100 MHz sysclk this should cover req. for t2 and t3.
             spi_sclk <= 1'b0;
             clk_divide_count <= 'b1;
             sclk_count_onehot <= 'b1;
@@ -71,7 +74,7 @@ always @(posedge sysclk) begin
       ST_PWRUP: begin
          clk_divide_count <= clk_divide_count + 1;
          if (clk_divide_count==(CLK_DIVIDE/2)) begin
-            spi_sclk <= ~spi_sclk | spi_cs_n;
+            spi_sclk <= ~spi_sclk;
             clk_divide_count <= 'b1;
             if (spi_sclk==1'b1) begin
                sclk_count_onehot <= {sclk_count_onehot[16:0], 1'b0};
@@ -80,16 +83,22 @@ always @(posedge sysclk) begin
          if ((sclk_count_onehot[15])&&(spi_sclk==1'b1)) begin
             spi_cs_n <= 1'b1;
          end
-         if (sclk_count_onehot[17]) begin
+         if ((sclk_count_onehot[16])&&(spi_sclk==1'b0)&&(clk_divide_count==(CLK_DIVIDE/2))) begin
+            // except for power up, first edge of sclk after scn negedge are sclk posedges
+            sclk_count_onehot <= {sclk_count_onehot[16:0], 1'b0};
+            spi_sclk <= 1'b0;
+         end
+         if ((sclk_count_onehot[17])&&(clk_divide_count==(CLK_DIVIDE/2))) begin
             clk_count_onehot <= 'b1;
             fsm_state <= ST_READ_CSN_LO;
+            spi_sclk <= 1'b0;
          end
       end
       ST_READ_CSN_LO: begin
          spi_cs_n <= 1'b0;
-         spi_sclk <= 1'b1;
-         if (clk_count_onehot[3]) begin
-            spi_sclk <= 1'b0;
+         spi_sclk <= 1'b0;
+         if (clk_count_onehot[3]) begin // with 100 MHz sysclk this should cover req. for t2 and t3.
+            spi_sclk <= 1'b1;
             clk_divide_count <= 'b1;
             sclk_count_onehot <= 'b1;
             fsm_state <= ST_READ;
@@ -98,93 +107,30 @@ always @(posedge sysclk) begin
       ST_READ : begin
          clk_divide_count <= clk_divide_count + 1;
          if (clk_divide_count==(CLK_DIVIDE/2)) begin
-            spi_sclk <= ~spi_sclk | spi_cs_n;
+            spi_sclk <= ~spi_sclk;
             clk_divide_count <= 'b1;
-            if (spi_sclk==1'b1) begin
+            if (spi_sclk==1'b0) begin
                sclk_count_onehot <= {sclk_count_onehot[16:0], 1'b0};
+               if (sclk_count_onehot[16]) begin
+                  spi_sclk <= 1'b0;
+               end
             end
          end
-         if ((sclk_count_onehot[15])&&(spi_sclk==1'b1)) begin
+         if ((sclk_count_onehot[16])&&(spi_sclk==1'b1)) begin
             spi_cs_n <= 1'b1;
+            spi_data_latched <= spi_data;
          end
-         if (sclk_count_onehot[17]) begin
+         if ((sclk_count_onehot[17])&&(clk_divide_count==(CLK_DIVIDE/2))) begin
             clk_count_onehot <= 'b1;
             fsm_state <= ST_READ_CSN_LO;
+            spi_sclk <= 1'b0;
          end
-      end
-   endcase
-end
-
-/*
-always @(posedge sysclk) begin
-   clk_divide_count <= clk_divide_count + 1;
-   if (clk_divide_count==(CLK_DIVIDE/2)) begin
-      spi_sclk <= ~spi_sclk;
-      clk_divide_count <= 'b1;
-   end
-end
-
-reg [7:0] spi_sclk_count;
-reg       spi_read_valid='b0;
-reg [15:0] spi_data;
-
-task spi_sclk_ctrl;
-   input fsm_state_t next_fsm_state;
-   begin
-      spi_cs_n <= 1'b0;
-      spi_sclk_count <= spi_sclk_count + 1;
-      if ((spi_cs_n==1'b1)&&(spi_sclk_count!='b0)) begin
-         spi_cs_n <= 1'b1;
-      end
-      if (spi_sclk_count=='d16) begin
-         spi_cs_n <= 1'b1;
-      end
-      if (spi_sclk_count=='d32) begin
-         spi_sclk_count <= 'b0;
-         fsm_state <= next_fsm_state;
-      end
-   end
-endtask
-
-
-always @(posedge spi_sclk) begin
-   case (fsm_state)
-      ST_IDLE : begin
-         spi_cs_n <= 1'b1;
-         spi_sclk_count <= 'b0;
-         fsm_state <= ST_POWER_UP;
-      end
-      ST_POWER_UP : begin
-         spi_sclk_ctrl(ST_POWERED_READ);
-      end
-      ST_POWERED_READ: begin
-         spi_sclk_ctrl(ST_POWERED_READ);
-         if (spi_sclk_count!=0) begin
+         // read data after 7 ns but before 40 ns from negedge to satisfy t4 and t7
+         if ((spi_sclk==1'b0) && (clk_divide_count=='h2) && (sclk_count_onehot[16]==1'b0)) begin
             spi_data <= {spi_data[14:0], spi_sdata};
          end
-         if (spi_sclk_count=='b0) begin
-            spi_read_valid <= 'b1;
-         end
-         if (spi_sclk_count=='d16) begin
-            spi_read_valid <= 'b0;
-         end
       end
    endcase
-end
-
-reg spi_read_valid_cdc = 'b0;
-reg spi_read_valid_cdc_d = 'b0;
-
-reg [15:0] spi_data_cdc;
-reg [15:0] spi_data_latched;
-
-always @(posedge sysclk) begin
-   spi_read_valid_cdc <= spi_read_valid;
-   spi_read_valid_cdc_d <= spi_read_valid_cdc;
-   spi_data_cdc <= spi_data;
-   if (spi_read_valid_cdc_d&~spi_read_valid_cdc) begin
-      spi_data_latched <= spi_data_cdc;
-   end
 end
 
 wire [11:0] mic3_value = spi_data_latched[0+:12];
@@ -193,6 +139,5 @@ ila_0 i_ila (
    .clk     (sysclk),
    .probe0  (spi_data_latched)
 );
-*/
 
 endmodule

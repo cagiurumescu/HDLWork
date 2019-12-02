@@ -8,8 +8,11 @@ add wave -noupdate /sim/i_fpga/spi_sdata
 add wave -noupdate -radix hexadecimal /sim/i_fpga/clk_divide_count
 add wave -noupdate -radix hexadecimal /sim/i_fpga/clk_count_onehot
 add wave -noupdate -radix hexadecimal /sim/i_fpga/sclk_count_onehot
+add wave -noupdate -radix hexadecimal /sim/i_fpga/spi_data
+add wave -noupdate -radix hexadecimal /sim/i_fpga/spi_data_latched
+add wave -noupdate -radix hexadecimal /sim/i_fpga/mic3_value
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {524836 ps} 0} {{Cursor 2} {7951228 ps} 0}
+WaveRestoreCursors {{Cursor 1} {524836 ps} 0} {{Cursor 2} {18515003 ps} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 154
 configure wave -valuecolwidth 78
@@ -25,4 +28,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {7653801 ps} {8327970 ps}
+WaveRestoreZoom {0 ps} {45026203 ps}

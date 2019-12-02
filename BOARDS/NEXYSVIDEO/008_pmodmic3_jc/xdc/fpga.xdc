@@ -8,7 +8,7 @@
 ## Clock Signal
 set_property -dict { PACKAGE_PIN R4    IOSTANDARD LVCMOS33 } [get_ports { sysclk }]; #IO_L13P_T2_MRCC_34 Sch=sysclk
 create_clock -add -name sysclk_pin -period 10.000 -waveform {0 5.000} [get_ports {sysclk}];
-create_generated_clock -name spi_sclk -source [get_ports {sysclk}] -divide_by 6 [get_pins {spi_sclk_reg/Q}]
+#create_generated_clock -name spi_sclk -source [get_ports {sysclk}] -divide_by 6 [get_pins {spi_sclk_reg/Q}]
 
 
 ## FMC Transceiver clocks (Must be set to value provided by Mezzanine card, currently set to 156.25 MHz)
