@@ -44,8 +44,10 @@ always @(posedge clk_src or posedge rst_src) begin
    end
 end
 
-// ASYNC_REG is not a timing constraint, it is a placement constraint for following FFs to be placed close together
-// so that metastability of meta_toggle does not propagate downstream
+// ASYNC_REG is also a placement constraint for following FFs to be placed 
+// close together so that metastability of meta_toggle does not propagate 
+// downstream (UG625)
+
 (* ASYNC_REG = "TRUE" *) reg meta_toggle;
 (* ASYNC_REG = "TRUE" *) reg [1:0] toggle_dst;
 

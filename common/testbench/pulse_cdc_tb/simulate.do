@@ -36,4 +36,8 @@ vsim -L work ${MODULE}_tb
 
 add log -recursive /*
 
+if {[file exists wave.do]} {
+   do wave.do
+}
+
 run 10 us
