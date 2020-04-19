@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2019 Xilinx, Inc.
+// Copyright (c) 2020 Xilinx, Inc.
 // All Rights Reserved
 ///////////////////////////////////////////////////////////////////////////////
 //   ____  ____
@@ -8,7 +8,7 @@
 // \   \   \/     Version    : 14.7
 //  \   \         Application: Xilinx CORE Generator
 //  /   /         Filename   : chipscope_ila_trig0.v
-// /___/   /\     Timestamp  : Fri Dec 27 21:22:29 Pacific Standard Time 2019
+// /___/   /\     Timestamp  : Sat Apr 18 10:33:43 Pacific Daylight Time 2020
 // \   \  /  \
 //  \___\/\___\
 //

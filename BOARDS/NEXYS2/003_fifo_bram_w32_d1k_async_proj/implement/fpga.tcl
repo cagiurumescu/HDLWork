@@ -289,6 +289,7 @@ proc set_process_props {} {
    puts "$myScript: setting process properties..."
 
    project set "Max Fanout" "100000" -process "Synthesize - XST"
+   project set "Trim Unconnected Signals" "false" -process "Map"
    project set "Enable Internal Done Pipe" "true" -process "Generate Programming File"
 
    puts "$myScript: project property values set."

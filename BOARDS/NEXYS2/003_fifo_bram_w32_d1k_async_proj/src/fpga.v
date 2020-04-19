@@ -54,17 +54,17 @@ always @(posedge clk40) begin
    end
 end
 
-wire [35:0] control0;
-chipscope_icon_ctlr0 i_chipscope_icon(
-   .CONTROL0   (control0)
-);
+//wire [35:0] control0;
+//chipscope_icon_ctlr0 i_chipscope_icon(
+//   .CONTROL0   (control0)
+//);
 
 wire [255:0] trig0;
-chipscope_ila_trig0 i_chipscope_ila(
-   .CLK     (clk50),
-   .CONTROL (control0),
-   .TRIG0   (trig0)
-);
+//chipscope_ila_trig0 i_chipscope_ila(
+//   .CLK     (clk50),
+//   .CONTROL (control0),
+//   .TRIG0   (trig0)
+//);
 
 reg         wr_en;
 reg         wr_enable;
@@ -81,7 +81,7 @@ reg  [31:0] dout_d;
 always @(posedge clk40) begin
    if (rst_clk40) begin
       wr_en <= 'b0;
-      din   <= 'b0;
+      din   <= 'hFFFFFF01;
       wr_enable <= 'b0;
    end else begin
       wr_enable <= ~wr_enable;
@@ -115,7 +115,7 @@ reg fifo_error;
 always @(posedge clk50) begin
    if (rst_clk50) begin
       rd_en_d <= 'b0;
-      dout_d <= -1;
+      dout_d <= 'hFFFFFF00;
       fifo_error <= 'b0;
    end else begin
       rd_en_d <= rd_en;

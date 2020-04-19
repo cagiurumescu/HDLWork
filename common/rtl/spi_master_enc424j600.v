@@ -31,9 +31,9 @@ module spi_master_enc424j600 #(
    // user interface
    input          clk,
    input          rst,
-   input  [7:0]   opbyte,
+   input  [15:0]  opbyte, // MSB for RCRU/WCRU/BFCU/BFSU unbanked txn only
    input          opbyte_valid,
-   input  [10:0]  nbyte_num,   // cannot be zero when N-byte transaction used, max 2KB-1
+   input  [10:0]  nbyte_num,   // cannot be zero when N-byte transaction used, max 2KB-1 (actual data is 2KB-2 because of opcode -- including for unbanked)
    input  [7:0]   wrdat_byte,
    input          wrdat_valid, // should assert until ready asserts. byte taken when valid&ready
    output reg     wrdat_ready,
@@ -61,8 +61,7 @@ localparam [NBS-1:0] ST_TCSD = 2;
 localparam [NBS-1:0] ST_THLF = 3;
 localparam [NBS-1:0] ST_ONEBYTE = 4;
 localparam [NBS-1:0] ST_TWOBYTE = 5;
-localparam [NBS-1:0] ST_THREEBYTE = 6;
-localparam [NBS-1:0] ST_NBYTE = 7;
+localparam [NBS-1:0] ST_NBYTE = 6;
 
 reg         sck_ff;
 reg         csn_ff;
@@ -78,11 +77,12 @@ assign      rddat_valid = rddat_valid_ff;
 
 reg  [6:0]  opbyte_shift;
 reg  [7:0]  clk_cnt;
-reg  [11+3-1:0]  bit_cnt; // to accomoted nbyte_num for n-byte transactions
+reg  [11+3-1:0]  bit_cnt; // to accomodate nbyte_num for n-byte transactions
 
 reg         nbyte_isread;
 reg  [7:0]  wrdat_byte_latched;
 reg  [10:0] nbyte_num_latched;
+reg         unbanked_txn; // RCRU/WCRU/BFCU/BFSU
 
 always @(posedge clk or posedge rst) begin
    if (rst) begin
@@ -101,6 +101,7 @@ always @(posedge clk or posedge rst) begin
       wrdat_ready    <= 'b0;
       wrdat_byte_latched <= 'b0;
       nbyte_num_latched <= 'b0;
+      unbanked_txn   <= 'b0;
    end else begin
       txn_done <= 'b0;
       rddat_valid_ff <= 'b0;
@@ -114,6 +115,7 @@ always @(posedge clk or posedge rst) begin
             sck_ff <= 'b0;
             clk_cnt<= 'b1;
             bit_cnt<= 'b0;
+            unbanked_txn <= 'b0;
             if (opbyte_valid==1'b1) begin
                opbyte_shift <= opbyte[6:0];
                mosi_ff <= opbyte[7];
@@ -131,15 +133,25 @@ always @(posedge clk or posedge rst) begin
                   if (opbyte[7:5]==3'b011) begin
                      // three-byte command
                      nbyte_isread <= opbyte[1];
-                     next_state <= ST_THREEBYTE;
+                     next_state <= ST_NBYTE;
                      wrdat_ready <= ~opbyte[1];
+                     nbyte_num_latched <= 'h3;
                   end
                   if (opbyte[7:5]==3'b001) begin
-                     // n-byte command
-                     next_state <= ST_NBYTE;
-                     nbyte_isread <= ~opbyte[1]; // yes, it's inverted compared to 3-byte
-                     wrdat_ready <= opbyte[1];
-                     nbyte_num_latched <= nbyte_num;
+                     if (opbyte[4:3]==2'b00) begin
+                        // n-byte command unbanked to a ONEBYTE+NBYTE
+                        next_state <= ST_ONEBYTE;
+                        unbanked_txn <= 'b1;
+                        nbyte_isread <= ~(opbyte[2]|opbyte[1]);
+                        wrdat_ready <= (opbyte[2]|opbyte[1]);
+                        nbyte_num_latched <= nbyte_num;
+                     end else begin
+                        // n-byte command banked
+                        next_state <= ST_NBYTE;
+                        nbyte_isread <= ~opbyte[1]; // yes, it's inverted compared to 3-byte
+                        wrdat_ready <= opbyte[1];
+                        nbyte_num_latched <= nbyte_num;
+                     end
                   end
                   if ((opbyte[7:6]==2'b10)||(opbyte[7:5]==3'b010)) begin
                      // n-byte command
@@ -177,6 +189,14 @@ always @(posedge clk or posedge rst) begin
             if (bit_cnt[3]) begin
                state <= ST_TCSS_CSH;
                next_state <= ST_TCSD;
+               if (unbanked_txn) begin
+                  opbyte_shift <= opbyte[14:8];
+                  mosi_ff <= opbyte[15];
+                  state <= ST_THLF;
+                  next_state <= ST_NBYTE;
+                  bit_cnt <= 'b0; // reset here so that all NBYTE txn are numbytes-1 data
+                  // unbanked_txn will clear when we go back to IDLE
+               end
             end else begin
                state <= ST_THLF;
                next_state <= ST_ONEBYTE;
@@ -196,35 +216,6 @@ always @(posedge clk or posedge rst) begin
                end
             end
          end
-         ST_THREEBYTE: begin
-            sck_ff <= ~sck_ff;
-            if (bit_cnt[4]&bit_cnt[3]) begin
-               state <= ST_TCSS_CSH;
-               next_state <= ST_TCSD;
-               if (nbyte_isread) begin
-                  rddat_valid_ff <= 'b1;
-               end
-            end else begin
-               state <= ST_THLF;
-               next_state <= ST_THREEBYTE;
-               if (bit_cnt[3]|bit_cnt[4]) begin
-                  if ((~sck_ff)&nbyte_isread) begin
-                     rddat_byte_ff <= {rddat_byte_ff[6:0], MISO};
-                  end
-                  if (sck_ff&(~nbyte_isread)) begin
-                     if (bit_cnt[2:0]==3'b000) begin
-                        // reuse opbyte_shift for holding writebyte
-                        mosi_ff <= wrdat_byte_latched[7];
-                        opbyte_shift <= wrdat_byte_latched[6:0];
-                        wrdat_ready <= 1'b1;
-                     end
-                  end
-               end
-               if (sck_ff&nbyte_isread&(bit_cnt==5'b10000)) begin
-                  rddat_valid_ff <= 'b1;
-               end
-            end
-         end
          ST_NBYTE: begin
             sck_ff <= ~sck_ff;
             if (bit_cnt[13:3]==nbyte_num_latched) begin
@@ -236,6 +227,24 @@ always @(posedge clk or posedge rst) begin
             end else begin
                state <= ST_THLF;
                next_state <= ST_NBYTE;
+               if (bit_cnt[13:3]!=11'h000) begin
+                  if ((~sck_ff)&nbyte_isread) begin
+                     rddat_byte_ff <= {rddat_byte_ff[6:0], MISO};
+                  end
+                  if (sck_ff&(~nbyte_isread)) begin
+                     if (bit_cnt[2:0]==3'b000) begin
+                        // reuse opbyte_shift for holding writebyte
+                        // load next byte
+                        mosi_ff <= wrdat_byte_latched[7];
+                        opbyte_shift <= wrdat_byte_latched[6:0];
+                        wrdat_ready <= 1'b1;
+                     end
+                  end
+               end
+               // 1st byte is opcode, 2nd, 3rd bytes are data
+               if (sck_ff&nbyte_isread&(bit_cnt[2:0]==3'b000)&(bit_cnt[13:4]!=10'h000)) begin
+                  rddat_valid_ff <= 'b1;
+               end
             end
          end
          ST_THLF: begin
@@ -250,7 +259,6 @@ always @(posedge clk or posedge rst) begin
                end
             end
          end
-
       endcase
    end
 end
