@@ -149,6 +149,7 @@ int main(void)
 XStatus IoModuleExample(u16 DeviceId)
 {
     XStatus Status;
+    u32 data;
 
     /*
      * Initialize the IO Module driver so that it is ready to use.
@@ -187,6 +188,11 @@ XStatus IoModuleExample(u16 DeviceId)
     //    return XST_FAILURE;
     //}
 
+    for (int i=1;i<=4;i++) {
+       data=XIOModule_DiscreteRead(&IOModule, i);
+       xil_printf("GPI[i]=0x%08x\n\r", data);
+    }
+
     /*
      * Wait for the interrupts to be processed, if no interrupt occurs this
      * loop will wait forever.
@@ -202,7 +208,9 @@ XStatus IoModuleExample(u16 DeviceId)
         {
            xil_printf("Interrupts processed %d\n\r", InterruptProcessed);
            InterruptProcessedOld = InterruptProcessed;
-           //break;
+           if (InterruptProcessedOld==10) {
+              break;
+           }
         }
     }
 
