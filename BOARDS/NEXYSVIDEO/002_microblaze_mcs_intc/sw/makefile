@@ -17,5 +17,5 @@ load: updatemem
 	-cd build; xsct ../design_top_load.tcl
 
 clean:
-	-rm -rf build
+	-rm -rf build .Xil
 .PHONY: updatemem bsp

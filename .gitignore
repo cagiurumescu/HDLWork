@@ -12,14 +12,28 @@
 /**/nogit
 /**/Session_hw.vim
 /**/Session_sw.vim
+# ModelSim simulation
 /**/sim/transcript
 /**/sim/vsim.wlf
 /**/sim/work/*
 /**/sim/modelsim.ini
+# HW/SW builds
 /**/synth/build_out
 /**/sw/build
+# Xilinx IP managed project
 /**/ip/ip_user_files/*
 /**/ip/managed_ip_project/*
+# Xilinx IP generated files
+/**/*_sim_netlist.v
+/**/*_sim_netlist.vhdl
+/**/*_stub.v
+/**/*_stub.vhdl
+/**/*_board.xdc
+/**/*_ooc.xdc
+/**/*.veo
+/**/*.vho
+/**/*.dcp
+/**/*.xml
 /BOARDS/**/000_template
 /BOARDS/PlutoSDR/other
 /header_ver.txt

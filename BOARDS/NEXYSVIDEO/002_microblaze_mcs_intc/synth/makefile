@@ -12,7 +12,7 @@ build_out/design_top.bit:  $(SOURCE_FILES) ../xdc/design_top.xdc design_top.tcl
 	-@rm -f webtalk*
 
 clean:
-	-rm -rf build_out
+	-rm -rf build_out .Xil
 
 all: build_out/design_top.bit
 
