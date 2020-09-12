@@ -99,9 +99,15 @@ syncrst #(
    .srst    (rst_clk200m)
 );
 
+// generate interrupts faster in simulation
+localparam COUNTER_SEL = 26
+                     // synthesis translate_off
+                     *0+16
+                     // synthesis translate_on
+                     ;
 
 reg [26:0] counter = 'b0;
-wire counter_msb = counter[26];
+wire counter_msb = counter[COUNTER_SEL];
 wire intc_irq;
 
 always @(posedge sysclk) begin

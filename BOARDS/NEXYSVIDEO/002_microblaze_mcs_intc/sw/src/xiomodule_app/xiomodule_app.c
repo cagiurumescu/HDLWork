@@ -110,24 +110,21 @@ volatile static u32 InterruptProcessedOld = 0;
 * @note     None.
 *
 ****************************************************************************/
-int main(void)
-{
+int main(void) {
     XStatus Status;
 
     /*
      *  Run the example , specify the Device ID generated in xparameters.h
      */
     Status = IoModuleExample(IOMODULE_DEVICE_ID);
-    if (Status != XST_SUCCESS)
-    {
-		xil_printf("Iomodule Example Failed\r\n");
-        return XST_FAILURE;
+    if (Status != XST_SUCCESS) {
+       xil_printf("Iomodule Example Failed\r\n");
+       return XST_FAILURE;
     }
 
-	xil_printf("Successfully ran Iomodule Example\r\n");
+    xil_printf("Successfully ran Iomodule Example\r\n");
     return XST_SUCCESS;
 }
-
 
 /*****************************************************************************/
 /**
@@ -190,7 +187,7 @@ XStatus IoModuleExample(u16 DeviceId)
 
     for (int i=1;i<=4;i++) {
        data=XIOModule_DiscreteRead(&IOModule, i);
-       xil_printf("GPI[i]=0x%08x\n\r", data);
+       xil_printf("GPI[%d]=0x%08x\n\r", i, data);
     }
 
     /*
