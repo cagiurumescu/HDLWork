@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="design_top_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="design_top_tb" />
+            <top_module name="glbl" />
+            <top_module name="iomodule_funcs" />
+            <top_module name="iomodule_vote_pkg" />
+            <top_module name="lmb_bram_if_funcs" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="114235100001fs"></ZoomEndTime>
+      <Cursor1Time time="69145000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="178"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="37" />
+   <wave_markers>
+      <marker label="" time="50290000000" />
+   </wave_markers>
+   <wvobject type="logic" fp_name="/design_top_tb/clk">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/uart_rx_out">
+      <obj_property name="ElementShortName">uart_rx_out</obj_property>
+      <obj_property name="ObjectShortName">uart_rx_out</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/uart_tx_in">
+      <obj_property name="ElementShortName">uart_tx_in</obj_property>
+      <obj_property name="ObjectShortName">uart_tx_in</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/i_microblaze/Reset">
+      <obj_property name="ElementShortName">Reset</obj_property>
+      <obj_property name="ObjectShortName">Reset</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/i_microblaze/INTC_IRQ">
+      <obj_property name="ElementShortName">INTC_IRQ</obj_property>
+      <obj_property name="ObjectShortName">INTC_IRQ</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/i_microblaze/INTC_Interrupt">
+      <obj_property name="ElementShortName">INTC_Interrupt[0:0]</obj_property>
+      <obj_property name="ObjectShortName">INTC_Interrupt[0:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/bit_cnt">
+      <obj_property name="ElementShortName">bit_cnt[2:0]</obj_property>
+      <obj_property name="ObjectShortName">bit_cnt[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/state">
+      <obj_property name="ElementShortName">state[2:0]</obj_property>
+      <obj_property name="ObjectShortName">state[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/baud_cnt">
+      <obj_property name="ElementShortName">baud_cnt[9:0]</obj_property>
+      <obj_property name="ObjectShortName">baud_cnt[9:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/uart_byte">
+      <obj_property name="ElementShortName">uart_byte[7:0]</obj_property>
+      <obj_property name="ObjectShortName">uart_byte[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/uart_string_len">
+      <obj_property name="ElementShortName">uart_string_len[9:0]</obj_property>
+      <obj_property name="ObjectShortName">uart_string_len[9:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/uart_string">
+      <obj_property name="ElementShortName">uart_string[8191:0]</obj_property>
+      <obj_property name="ObjectShortName">uart_string[8191:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/parity_bit_rx">
+      <obj_property name="ElementShortName">parity_bit_rx</obj_property>
+      <obj_property name="ObjectShortName">parity_bit_rx</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/parity_data">
+      <obj_property name="ElementShortName">parity_data</obj_property>
+      <obj_property name="ObjectShortName">parity_data</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/init_calib_complete">
+      <obj_property name="ElementShortName">init_calib_complete</obj_property>
+      <obj_property name="ObjectShortName">init_calib_complete</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/ui_clk">
+      <obj_property name="ElementShortName">ui_clk</obj_property>
+      <obj_property name="ObjectShortName">ui_clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/ui_clk_sync_rst">
+      <obj_property name="ElementShortName">ui_clk_sync_rst</obj_property>
+      <obj_property name="ObjectShortName">ui_clk_sync_rst</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/clk200m_bufg">
+      <obj_property name="ElementShortName">clk200m_bufg</obj_property>
+      <obj_property name="ObjectShortName">clk200m_bufg</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/gpo1">
+      <obj_property name="ElementShortName">gpo1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">gpo1[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/gpo3">
+      <obj_property name="ElementShortName">gpo3[31:0]</obj_property>
+      <obj_property name="ObjectShortName">gpo3[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/gpo4">
+      <obj_property name="ElementShortName">gpo4[31:0]</obj_property>
+      <obj_property name="ObjectShortName">gpo4[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/hw_int_uiclk">
+      <obj_property name="ElementShortName">hw_int_uiclk</obj_property>
+      <obj_property name="ObjectShortName">hw_int_uiclk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/intc_irq_uiclk">
+      <obj_property name="ElementShortName">intc_irq_uiclk</obj_property>
+      <obj_property name="ObjectShortName">intc_irq_uiclk</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/state">
+      <obj_property name="ElementShortName">state[2:0]</obj_property>
+      <obj_property name="ObjectShortName">state[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/gpo3_uiclk">
+      <obj_property name="ElementShortName">gpo3_uiclk[31:0]</obj_property>
+      <obj_property name="ObjectShortName">gpo3_uiclk[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/gpo4_uiclk">
+      <obj_property name="ElementShortName">gpo4_uiclk[31:0]</obj_property>
+      <obj_property name="ObjectShortName">gpo4_uiclk[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/gpo1_uiclk">
+      <obj_property name="ElementShortName">gpo1_uiclk[31:0]</obj_property>
+      <obj_property name="ObjectShortName">gpo1_uiclk[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/app_addr">
+      <obj_property name="ElementShortName">app_addr[28:0]</obj_property>
+      <obj_property name="ObjectShortName">app_addr[28:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/app_cmd">
+      <obj_property name="ElementShortName">app_cmd[2:0]</obj_property>
+      <obj_property name="ObjectShortName">app_cmd[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/app_en">
+      <obj_property name="ElementShortName">app_en</obj_property>
+      <obj_property name="ObjectShortName">app_en</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/app_rdy">
+      <obj_property name="ElementShortName">app_rdy</obj_property>
+      <obj_property name="ObjectShortName">app_rdy</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/app_wdf_data">
+      <obj_property name="ElementShortName">app_wdf_data[127:0]</obj_property>
+      <obj_property name="ObjectShortName">app_wdf_data[127:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/app_wdf_end">
+      <obj_property name="ElementShortName">app_wdf_end</obj_property>
+      <obj_property name="ObjectShortName">app_wdf_end</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/app_wdf_wren">
+      <obj_property name="ElementShortName">app_wdf_wren</obj_property>
+      <obj_property name="ObjectShortName">app_wdf_wren</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/app_wdf_rdy">
+      <obj_property name="ElementShortName">app_wdf_rdy</obj_property>
+      <obj_property name="ObjectShortName">app_wdf_rdy</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/design_top_tb/i_design_top/app_rd_data">
+      <obj_property name="ElementShortName">app_rd_data[127:0]</obj_property>
+      <obj_property name="ObjectShortName">app_rd_data[127:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/design_top_tb/i_design_top/app_rd_data_valid">
+      <obj_property name="ElementShortName">app_rd_data_valid</obj_property>
+      <obj_property name="ObjectShortName">app_rd_data_valid</obj_property>
+   </wvobject>
+</wave_config>

@@ -56,6 +56,10 @@ always @(posedge clk_src) begin
    end
 end
 
+// ASYNC_REG is also a placement constraint for following FFs to be placed 
+// close together so that metastability of meta_* does not propagate 
+// downstream (UG625)
+
 (* ASYNC_REG = "TRUE" *) reg [BITS-1:0] meta_counter_gray_src;
 (* ASYNC_REG = "TRUE" *) reg [BITS-1:0] counter_gray_dst;
 (* ASYNC_REG = "TRUE" *) reg [BITS-1:0] counter_gray_dst_d;
