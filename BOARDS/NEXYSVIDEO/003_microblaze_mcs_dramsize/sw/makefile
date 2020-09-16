@@ -15,6 +15,9 @@ updatemem: ./build/$(DNAME_APP)/Debug/$(DNAME_APP).elf
 load: updatemem
 	-cd build; xsct ../design_top_load.tcl
 
+prog:
+	-cd build; xsct ../design_top_load.tcl
+
 clean:
 	-rm -rf build .Xil
 .PHONY: updatemem bsp

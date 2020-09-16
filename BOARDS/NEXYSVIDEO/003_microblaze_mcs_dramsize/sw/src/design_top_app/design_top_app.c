@@ -1,354 +1,202 @@
-/******************************************************************************
-*
-* Copyright (C) 2011 - 2015 Xilinx, Inc.  All rights reserved.
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-* XILINX  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-* WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
-* OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*
-* Except as contained in this notice, the name of the Xilinx shall not be used
-* in advertising or otherwise to promote the sale, use or other dealings in
-* this Software without prior written authorization from Xilinx.
-*
-******************************************************************************/
-/******************************************************************************/
-/**
-*
-* @file xiomodule_example.c
-*
-* This file contains a self test example using the IO Module driver
-* (XIoModule) and hardware device. Please reference other device driver
-* examples to see more examples of how the interrupts, timers and UART can be
-* used by a software application.
-*
-* @note
-*
-* None
-*
-* <pre>
-*
-* MODIFICATION HISTORY:
-* Ver   Who  Date     Changes
-* ----- ---- -------- ----------------------------------------------------
-* 1.00a sa   07/15/11 First release
-* 2.4   ms   01/23/17 Added xil_printf statement in main function to
-*                     ensure that "Successfully ran" and "Failed" strings
-*                     are available in all examples. This is a fix for
-*                     CR-965028.
-* </pre>
-******************************************************************************/
+/*******************************************************************************
+MIT License
 
-/***************************** Include Files *********************************/
+Copyright (c) 2019-2020 Claudiu Giurumescu
 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*******************************************************************************/
 #include "xparameters.h"
 #include "xstatus.h"
 #include "xiomodule.h"
 #include "xil_exception.h"
 #include "xil_printf.h"
 
-/************************** Constant Definitions *****************************/
-
-/*
- * The following constants map to the XPAR parameters created in the
- * xparameters.h file. They are defined here such that a user can easily
- * change all the needed parameters in one place.
- */
 #define IOMODULE_DEVICE_ID XPAR_IOMODULE_0_DEVICE_ID
+// first external interrupt
 #define IOMODULE_INTR_ID  16
 
+static XIOModule ub_iomodule;
+volatile static u8 interrupt_ackd = 0;
 
-/**************************** Type Definitions *******************************/
+XStatus setup_interrupt(XIOModule *ub_iomodule_ptr);
+void interrupt_ack(void *callback_ref);
+void interrupt_wait(void);
+void dram_write(XIOModule *ub_iomodule_ptr, u32 dram_addr, u32* wdata);
+void dram_read(XIOModule *ub_iomodule_ptr, u32 dram_addr, u32* rdata);
 
-
-/***************** Macros (Inline Functions) Definitions *********************/
-
-
-/************************** Function Prototypes ******************************/
-
-XStatus IoModuleExample(u16 DeviceId);
-
-XStatus SetUpInterruptSystem(XIOModule *XIoModuleInstancePtr);
-
-void DeviceDriverHandler(void *CallbackRef);
-
-
-/************************** Variable Definitions *****************************/
-
-static XIOModule IOModule; /* Instance of the IO Module */
-
-/*
- * Create a shared variable to be used by the main thread of processing and
- * the interrupt processing.
- */
-volatile static u32 InterruptProcessed = 0;
-volatile static u32 InterruptProcessedOld = 0;
-
-
-/*****************************************************************************/
-/**
-*
-* This is the main function for the IO Module example .
-*
-* @param    None.
-*
-* @return   XST_SUCCESS to indicate success, otherwise XST_FAILURE.
-*
-* @note     None.
-*
+/****************************************************************************
+* main
 ****************************************************************************/
 int main(void) {
-    XStatus Status;
+    XStatus status;
+    u32 addr = 0x00000028;
+    u32 wdata[4];
+    u32 rdata[4];
 
-    /*
-     *  Run the example , specify the Device ID generated in xparameters.h
-     */
-    Status = IoModuleExample(IOMODULE_DEVICE_ID);
-    if (Status != XST_SUCCESS) {
-       xil_printf("Iomodule Example Failed\r\n");
-       return XST_FAILURE;
+    // Initialize IOModule driver
+    status = XIOModule_Initialize(&ub_iomodule, IOMODULE_DEVICE_ID);
+    if (status != XST_SUCCESS) {
+        return XST_FAILURE;
+    }
+    // Self-test
+    status = XIOModule_SelfTest(&ub_iomodule);
+    if (status != XST_SUCCESS) {
+        return XST_FAILURE;
+    }
+    // Setup interrupts
+    status = setup_interrupt(&ub_iomodule);
+    if (status != XST_SUCCESS) {
+        return XST_FAILURE;
     }
 
-    xil_printf("Successfully ran Iomodule Example\r\n");
+    wdata[0]=0x12345678;
+    wdata[1]=0xABCDEF01;
+    wdata[2]=0x87654321;
+    wdata[3]=0x10FEDCBA;
+
+    dram_write(&ub_iomodule,addr,wdata);
+    dram_read(&ub_iomodule,addr,rdata);
+    for (int i=1; i<=4; i++) {
+       xil_printf("RDATA[%d]=0x%08x\r\n",i-1,rdata[i-1]);
+    }
+    xil_printf("\r\n");
+    dram_read(&ub_iomodule,addr+1,rdata);
+    for (int i=1; i<=4; i++) {
+       xil_printf("RDATA[%d]=0x%08x\r\n",i-1,rdata[i-1]);
+    }
+    xil_printf("\r\n");
+    dram_read(&ub_iomodule,addr+2,rdata);
+    for (int i=1; i<=4; i++) {
+       xil_printf("RDATA[%d]=0x%08x\r\n",i-1,rdata[i-1]);
+    }
+    xil_printf("\r\n");
+    dram_read(&ub_iomodule,addr+3,rdata);
+    for (int i=1; i<=4; i++) {
+       xil_printf("RDATA[%d]=0x%08x\r\n",i-1,rdata[i-1]);
+    }
+    xil_printf("Done testing addr=0x%08x\r\n", addr);
+
+    for (addr=(1<<28); addr>=8; addr>>=1) {
+       wdata[0]=addr;
+       wdata[1]=addr;
+       wdata[2]=addr;
+       wdata[3]=addr;
+       dram_write(&ub_iomodule,addr,wdata);
+    }
+    dram_read(&ub_iomodule,0x0,rdata);
+    xil_printf("DRAM size is %d Mbytes\r\n", (rdata[0]<<1)>>20); // address is 2-byte word address
+
     return XST_SUCCESS;
 }
 
-/*****************************************************************************/
-/**
-*
-* This function is an example of how to use the IO Module driver component
-* (XIOModule) and the hardware device.  This function is designed to work
-* without external hardware devices to cause interrupts.  It may not return if
-* the IO Module is not properly connected to the processor in either software
-* or hardware.
-*
-* @param    DeviceId is device ID of the IO Module Device, typically
-*           XPAR_<IOMODULE_instance>_DEVICE_ID value from xparameters.h
-*
-* @return   XST_SUCCESS to indicate success, otherwise XST_FAILURE
-*
-* @note     None.
-*
-******************************************************************************/
-XStatus IoModuleExample(u16 DeviceId)
-{
-    XStatus Status;
-    u32 data;
-    u32 addr;
+/****************************************************************************
+* This function connects the interrupt handler of 
+* the IO Module to the processor.
+****************************************************************************/
+XStatus setup_interrupt(XIOModule *ub_iomodule_ptr) {
+   XStatus status;
 
-    /*
-     * Initialize the IO Module driver so that it is ready to use.
-     */
-    Status = XIOModule_Initialize(&IOModule, DeviceId);
-    if (Status != XST_SUCCESS)
-    {
-        return XST_FAILURE;
-    }
+   // Connect the interrupt handler that will be called when an interrupt * for the device occurs,
+   status = XIOModule_Connect(ub_iomodule_ptr, IOMODULE_INTR_ID, (XInterruptHandler) interrupt_ack, (void *)0);
+   if (status != XST_SUCCESS) {
+      return XST_FAILURE;
+   }
 
-    /*
-     * Perform a self-test to ensure that the hardware was built correctly.
-     */
-    Status = XIOModule_SelfTest(&IOModule);
-    if (Status != XST_SUCCESS)
-    {
-        return XST_FAILURE;
-    }
+   // Start the IO Module such that interrupts are enabled for all devices that cause interrupts.
+   status = XIOModule_Start(ub_iomodule_ptr);
+   if (status != XST_SUCCESS) {
+      return XST_FAILURE;
+   }
 
-    /*
-     * Setup the Interrupt System.
-     */
-    Status = SetUpInterruptSystem(&IOModule);
-    if (Status != XST_SUCCESS)
-    {
-        return XST_FAILURE;
-    }
+   // Enable interrupts for the device and then cause interrupts so the handlers will be called.
+   XIOModule_Enable(ub_iomodule_ptr, IOMODULE_INTR_ID);
+   // Initialize the exception table.
+   Xil_ExceptionInit();
+   // Register the IO module interrupt handler with the exception table.
+   Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT, (Xil_ExceptionHandler)XIOModule_DeviceInterruptHandler, (void*) 0);
+   // Enable exceptions.
+   Xil_ExceptionEnable();
 
-    /*
-     * Generate the interrupts.
-     */
+   return XST_SUCCESS;
+}
 
-    //Status = XOModule_GenerateIntr(&IOModule);
-    //if (Status != XST_SUCCESS)
-    //{
-    //    return XST_FAILURE;
-    //}
+/****************************************************************************
+* interrupt handler
+****************************************************************************/
+void interrupt_ack(void *callback_ref) {
+    // Indicate the interrupt has been processed using a shared variable.
+   interrupt_ackd = 1;
+}
 
-    // DRAM Write
-    addr = 0x00000008 | (4<<29); // write wraddr
-    XIOModule_DiscreteWrite(&IOModule,1,addr);
-    while (InterruptProcessed==InterruptProcessedOld); // this spins the cpu
-    InterruptProcessedOld = InterruptProcessed;
-    data = 0xABCDEF01;
-    XIOModule_DiscreteWrite(&IOModule,3,data);
-    data = 0x23456789;
-    XIOModule_DiscreteWrite(&IOModule,4,data);
-    addr = 0x00000008 | (6<<29); // latch [127:64]
-    XIOModule_DiscreteWrite(&IOModule,1,addr);
-    while (InterruptProcessed==InterruptProcessedOld); // this spins the cpu
-    InterruptProcessedOld = InterruptProcessed;
-    data = 0x01EFCDAB;
-    XIOModule_DiscreteWrite(&IOModule,3,data);
-    data = 0x89674523;
-    XIOModule_DiscreteWrite(&IOModule,4,data);
-    addr = 0x00000008 | (7<<29); // latch [63:0]
-    XIOModule_DiscreteWrite(&IOModule,1,addr);
-    while (InterruptProcessed==InterruptProcessedOld); // this spins the cpu
-    InterruptProcessedOld = InterruptProcessed;
-    addr = 0x00000008 | (0<<29); // clear transaction + wait for transaction complete
-    XIOModule_DiscreteWrite(&IOModule,1,addr);
-    while (InterruptProcessed==InterruptProcessedOld); // this spins the cpu
-    InterruptProcessedOld = InterruptProcessed;
+/****************************************************************************
+* interrupt wait
+****************************************************************************/
+void interrupt_wait(void) {
+   while (interrupt_ackd==0);
+   interrupt_ackd=0;
+}
+/****************************************************************************
+* DRAM writes
+****************************************************************************/
+void dram_write(XIOModule *ub_iomodule_ptr, u32 dram_addr, u32* wdata) {
+   // write wraddr
+   dram_addr = (dram_addr&0x1FFFFFFF)|(4<<29);
+   XIOModule_DiscreteWrite(ub_iomodule_ptr,1,dram_addr);
+   interrupt_wait();
 
-    // DRAM Read
-    addr = 0x00000008 | (5<<29); // write rdaddr + wait for read data
-    XIOModule_DiscreteWrite(&IOModule,1,addr);
-    while (InterruptProcessed==InterruptProcessedOld); // this spins the cpu
-    InterruptProcessedOld = InterruptProcessed;
+   // latch [127:64]
+   XIOModule_DiscreteWrite(ub_iomodule_ptr,3,wdata[3]); // [127:96]
+   XIOModule_DiscreteWrite(ub_iomodule_ptr,4,wdata[2]); // [95:64]
+   dram_addr = (dram_addr&0x1FFFFFFF)|(6<<29);
+   XIOModule_DiscreteWrite(ub_iomodule_ptr,1,dram_addr);
+   interrupt_wait();
+
+   // latch [63:0]
+   XIOModule_DiscreteWrite(ub_iomodule_ptr,3,wdata[1]); // [63:32]
+   XIOModule_DiscreteWrite(ub_iomodule_ptr,4,wdata[0]); // [31:0]
+   dram_addr = (dram_addr&0x1FFFFFFF)|(7<<29);
+   XIOModule_DiscreteWrite(ub_iomodule_ptr,1,dram_addr);
+   interrupt_wait();
+
+   // clear transaction + wait for transaction complete
+   dram_addr = (dram_addr&0x1FFFFFFF)|(0<<29);
+   XIOModule_DiscreteWrite(ub_iomodule_ptr,1,dram_addr);
+   interrupt_wait();
+}
+
+/****************************************************************************
+* DRAM reads
+****************************************************************************/
+void dram_read(XIOModule *ub_iomodule_ptr, u32 dram_addr, u32* rdata) {
+    // write rdaddr + wait for read data
+    dram_addr = (dram_addr&0x1FFFFFFF)|(5<<29);
+    XIOModule_DiscreteWrite(ub_iomodule_ptr,1,dram_addr);
+    interrupt_wait();
     // data will be available in GPI
     // could do read here or after transaction complete
-    addr = 0x00000008 | (0<<29); // clear transaction + wait for transaction complete
-    XIOModule_DiscreteWrite(&IOModule,1,addr);
-    while (InterruptProcessed==InterruptProcessedOld); // this spins the cpu
-    InterruptProcessedOld = InterruptProcessed;
+    // clear transaction + wait for transaction complete
+    dram_addr = (dram_addr&0x1FFFFFFF)|(0<<29);
+    XIOModule_DiscreteWrite(ub_iomodule_ptr,1,dram_addr);
+    interrupt_wait();
 
-    for (int i=1;i<=4;i++) {
-       data=XIOModule_DiscreteRead(&IOModule, i);
-       xil_printf("GPI[%d]=0x%08x\n\r", i, data);
-    }
-
-    /*
-     * Wait for the interrupts to be processed, if no interrupt occurs this
-     * loop will wait forever.
-     */
-    while (1)
-    {
-        /*
-         * If the interrupts occurred which is indicated by the global
-         * variable which is set in the device driver handler, then
-         * stop waiting
-         */
-        if (InterruptProcessed!=InterruptProcessedOld)
-        {
-           xil_printf("Interrupts processed %d\n\r", InterruptProcessed);
-           InterruptProcessedOld = InterruptProcessed;
-           if (InterruptProcessedOld==10) {
-              break;
-           }
-        }
-    }
-
-    return XST_SUCCESS;
-}
-
-/******************************************************************************/
-/**
-*
-* This function connects the interrupt handler of the IO Module to the
-* processor.  This function is separate to allow it to be customized for each
-* application.  Each processor or RTOS may require unique processing to connect
-* the interrupt handler.
-*
-* @param    None.
-*
-* @return   None.
-*
-* @note     None.
-*
-****************************************************************************/
-XStatus SetUpInterruptSystem(XIOModule *XIOModuleInstancePtr)
-{
-    XStatus Status;
-
-    /*
-     * Connect a device driver handler that will be called when an interrupt
-     * for the device occurs, the device driver handler performs the specific
-     * interrupt processing for the device
-     */
-    Status = XIOModule_Connect(XIOModuleInstancePtr, IOMODULE_INTR_ID,
-                               (XInterruptHandler) DeviceDriverHandler,
-                               (void *)0);
-    if (Status != XST_SUCCESS)
-    {
-        return XST_FAILURE;
-    }
-
-    /*
-     * Start the IO Module such that interrupts are enabled for all devices
-     * that cause interrupts.
-     */
-    Status = XIOModule_Start(XIOModuleInstancePtr);
-    if (Status != XST_SUCCESS)
-    {
-        return XST_FAILURE;
-    }
-
-    /*
-     * Enable interrupts for the device and then cause interrupts so the
-     * handlers will be called.
-     */
-    XIOModule_Enable(XIOModuleInstancePtr, IOMODULE_INTR_ID);
-
-    /*
-     * Initialize the exception table.
-     */
-    Xil_ExceptionInit();
-
-    /*
-     * Register the IO module interrupt handler with the exception table.
-     */
-    Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT,
-		 (Xil_ExceptionHandler)XIOModule_DeviceInterruptHandler,
-		 (void*) 0);
-
-    /*
-     * Enable exceptions.
-     */
-    Xil_ExceptionEnable();
-
-    return XST_SUCCESS;
-}
-
-/******************************************************************************/
-/**
-*
-* This function is designed to look like an interrupt handler in a device
-* driver. This is typically a 2nd level handler that is called from the
-* IO Module interrupt handler.  This handler would typically perform device
-* specific processing such as reading and writing the registers of the device
-* to clear the interrupt condition and pass any data to an application using
-* the device driver.  Many drivers already provide this handler and the user
-* is not required to create it.
-*
-* @param    CallbackRef is passed back to the device driver's interrupt handler
-*           by the XIOModule driver.  It was given to the XIOModule driver in
-*           the XIOModule_Connect() function call.  It is typically a pointer
-*           to the device driver instance variable if using the Xilinx Level 1
-*           device drivers.  In this example, we do not care about the callback
-*           reference, so we passed it a 0 when connecting the handler to the
-*           XIOModule driver and we make no use of it here.
-*
-* @return   None.
-*
-* @note     None.
-*
-****************************************************************************/
-void DeviceDriverHandler(void *CallbackRef)
-{
-    /*
-     * Indicate the interrupt has been processed using a shared variable.
-     */
-    InterruptProcessed++;
+    rdata[0]=XIOModule_DiscreteRead(ub_iomodule_ptr,4);
+    rdata[1]=XIOModule_DiscreteRead(ub_iomodule_ptr,3);
+    rdata[2]=XIOModule_DiscreteRead(ub_iomodule_ptr,2);
+    rdata[3]=XIOModule_DiscreteRead(ub_iomodule_ptr,1);
 }
