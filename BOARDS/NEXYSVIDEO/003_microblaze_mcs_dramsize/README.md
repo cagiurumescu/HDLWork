@@ -2,6 +2,10 @@
 The design contains a MicroBlaze MCS instance. It uses the GPIO to send R/W
 commands to the native interface of the MIG controller.
 
+## Resources
+[PG111](https://www.xilinx.com/support/documentation/ip_documentation/iomodule/v3_1/pg111-iomodule.pdf)-IOModule Documentation
+[UG586](https://www.xilinx.com/support/documentation/ip_documentation/ug586_7Series_MIS.pdf)-MIG Documentation
+
 ## MIG Writes
 We only have 4 32-bit GPOs so 128 bits. We'll write the DRAM address (29bits)
 first to GPO1 then write 128bit DRAM word to GPO3,GPO4 in two transactions.
@@ -17,8 +21,11 @@ increments of 0x8 increments the 16byte/128bit word being addressed.
 
 For example if we write the following data to address 0x0:
 >WDATA[0]=0x12345678; [ 31: 0]
+
 >WDATA[1]=0xABCDEF01; [ 63:32]
+
 >WDATA[2]=0x87654321; [ 95:64]
+
 >WDATA[3]=0x10FEDCBA; [127:96]
 
 We read back the following from address 0x0:
