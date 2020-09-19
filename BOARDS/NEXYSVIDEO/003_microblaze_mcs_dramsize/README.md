@@ -4,7 +4,7 @@ commands to the native interface of the MIG controller.
 
 ## Resources
 [PG111](https://www.xilinx.com/support/documentation/ip_documentation/iomodule/v3_1/pg111-iomodule.pdf)-IOModule Documentation  
-[PG116](https://www.xilinx.com/support/documentation/ip_documentation/microblaze_mcs/v3_0/pg116-microblaze-mcs.pdf)-Microblaze MCS Documentation
+[PG116](https://www.xilinx.com/support/documentation/ip_documentation/microblaze_mcs/v3_0/pg116-microblaze-mcs.pdf)-Microblaze MCS Documentation  
 [UG586](https://www.xilinx.com/support/documentation/ip_documentation/ug586_7Series_MIS.pdf)-MIG Documentation  
 [UG472](https://www.xilinx.com/support/documentation/user_guides/ug472_7Series_Clocking.pdf)-7Series Clocking Documentation
 
