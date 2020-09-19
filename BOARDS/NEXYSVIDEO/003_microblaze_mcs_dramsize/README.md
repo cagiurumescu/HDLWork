@@ -29,19 +29,22 @@ We read back the following from address 0x0:
 >RDATA[0]=0x12345678  
 >RDATA[1]=0xABCDEF01  
 >RDATA[2]=0x87654321  
->RDATA[3]=0x10FEDCBA  
+>RDATA[3]=0x10FEDCBA
+
 We read back the following from address 0x1:
 >RDATA[0]=0xEF011234  
 >RDATA[1]=0x5678ABCD  
 >RDATA[2]=0xDCBA8765  
->RDATA[3]=0x432110FE  
+>RDATA[3]=0x432110FE
+
 We read back the following from address 0x2:
 >RDATA[0]=0xABCDEF01  
 >RDATA[1]=0x12345678  
 >RDATA[2]=0x10FEDCBA  
->RDATA[3]=0x87654321  
+>RDATA[3]=0x87654321
+
 We read back the following from address 0x3:
 >RDATA[0]=0x5678ABCD  
 >RDATA[1]=0xEF011234  
 >RDATA[2]=0x432110FE  
->RDATA[3]=0xDCBA8765  
+>RDATA[3]=0xDCBA8765
