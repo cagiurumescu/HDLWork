@@ -27,10 +27,10 @@
 #
 # 3. The following remote source files that were added to the original project:-
 #
-#    "/media/claudiug/DOCUMENTS/HDLWork/BOARDS/NEXYSVIDEO/004_microblaze_linux/bd/design_top_bd/design_top_bd.bd"
-#    "/media/claudiug/DOCUMENTS/HDLWork/BOARDS/NEXYSVIDEO/004_microblaze_linux/bd/design_top_bd/hdl/design_top_bd_wrapper.v"
-#    "/media/claudiug/DOCUMENTS/HDLWork/BOARDS/NEXYSVIDEO/004_microblaze_linux/bd/design_top_bd/ip/design_top_bd_mig_7series_0_0/mig_a.prj"
-#    "/media/claudiug/DOCUMENTS/HDLWork/BOARDS/NEXYSVIDEO/004_microblaze_linux/xdc/design_top.xdc"
+#    "/HDLWork/BOARDS/NEXYSVIDEO/004_microblaze_linux/bd/design_top_bd/design_top_bd.bd"
+#    "/HDLWork/BOARDS/NEXYSVIDEO/004_microblaze_linux/bd/design_top_bd/hdl/design_top_bd_wrapper.v"
+#    "/HDLWork/BOARDS/NEXYSVIDEO/004_microblaze_linux/bd/mig_a.prj"
+#    "/HDLWork/BOARDS/NEXYSVIDEO/004_microblaze_linux/xdc/design_top.xdc"
 #
 #*****************************************************************************************
 
@@ -152,7 +152,7 @@ set obj [get_filesets sources_1]
 set files [list \
  [file normalize "${origin_dir}/../bd/design_top_bd/design_top_bd.bd"] \
  [file normalize "${origin_dir}/../bd/design_top_bd/hdl/design_top_bd_wrapper.v"] \
- [file normalize "${origin_dir}/../bd/design_top_bd/ip/design_top_bd_mig_7series_0_0/mig_a.prj"] \
+ [file normalize "${origin_dir}/../bd/mig_a.prj"] \
 ]
 add_files -norecurse -fileset $obj $files
 
@@ -162,7 +162,7 @@ set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "registered_with_manager" -value "1" -objects $file_obj
 
-set file "$origin_dir/../bd/design_top_bd/ip/design_top_bd_mig_7series_0_0/mig_a.prj"
+set file "$origin_dir/../bd/mig_a.prj"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "scoped_to_cells" -value "design_top_bd_mig_7series_0_0" -objects $file_obj
