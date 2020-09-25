@@ -1,7 +1,7 @@
 //Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2019.1_AR72614 (lin64) Build 2552052 Fri May 24 14:47:09 MDT 2019
-//Date        : Tue Sep 22 23:24:10 2020
+//Date        : Thu Sep 24 21:53:43 2020
 //Host        : TOSHIBAP755 running 64-bit Linux Mint 19.2 Tina
 //Command     : generate_target design_top_bd_wrapper.bd
 //Design      : design_top_bd_wrapper
