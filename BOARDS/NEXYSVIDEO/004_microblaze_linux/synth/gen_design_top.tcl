@@ -142,6 +142,10 @@ set_property -name "webtalk.vcs_export_sim" -value "1" -objects $obj
 set_property -name "webtalk.xsim_export_sim" -value "1" -objects $obj
 set_property -name "xpm_libraries" -value "XPM_CDC XPM_MEMORY" -objects $obj
 
+# Add custom IP
+set_property  ip_repo_paths  ${origin_dir}/../../ip/ip_repo/pushbtn_int_1.0 [current_project]
+update_ip_catalog -rebuild
+
 # Create 'sources_1' fileset (if not found)
 if {[string equal [get_filesets -quiet sources_1] ""]} {
   create_fileset -srcset sources_1
