@@ -75,7 +75,7 @@ ipx::infer_bus_interface S_AXI_ACLK xilinx.com:signal:clock_rtl:1.0 [ipx::curren
 ipx::infer_bus_interface S_AXI_ARESETN xilinx.com:signal:reset_rtl:1.0 [ipx::current_core]
 ipx::infer_bus_interface INTERRUPT_OUT xilinx.com:signal:interrupt:1.0 [ipx::current_core]
 # LEVEL_HIGH, LEVEL_LOW, EDGE_RISING, EDGE_FALLING
-set_property value "EDGE_RISING" [ipx::get_bus_parameters -of_objects [ipx::get_bus_interfaces -filter {NAME=~"INTERRUPT_OUT"}]]
+set_property value "LEVEL_HIGH" [ipx::get_bus_parameters -of_objects [ipx::get_bus_interfaces -filter {NAME=~"INTERRUPT_OUT"}]]
 set s_axi_addrw [expr [get_property SIZE_LEFT [ipx::get_ports -nocase true S_AXI_ARADDR -of_objects [ipx::current_core]]] + 1]
 if {$s_axi_addrw >= 16} {
    set range 65536

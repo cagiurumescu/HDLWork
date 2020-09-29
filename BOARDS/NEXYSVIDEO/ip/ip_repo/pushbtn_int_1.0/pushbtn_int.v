@@ -25,8 +25,11 @@ SOFTWARE.
 // very similar to an AXI4LITE slave peripheral created by Vivado's "create IP".
 
 module pushbtn_int #(
-   // make it match the SENSITIVITY parameter value for interrupt xilinx interface
-   parameter INTERRUPT_TYPE = "EDGE_RISING", // "EDGE_RISING", "EDGE_FALLING", "LEVEL_HIGH", "LEVEL_LOW"
+   // make it match the SENSITIVITY parameter value for interrupt Xilinx interface
+   // NB, seems that uBlaze controller does not support EDGE_FALLING/LEVEL_LOW
+   // but will infer the correct interrupt if the TCL script for generation of this
+   // ip adds the correct sensitivity (which must match the value here)!
+   parameter INTERRUPT_TYPE = "LEVEL_HIGH", // "EDGE_RISING", "EDGE_FALLING", "LEVEL_HIGH", "LEVEL_LOW"
    parameter S_AXI_ADDRW = 4,
    parameter S_AXI_DATAW = 32 // 32 or 64 only
 ) (
@@ -54,11 +57,59 @@ module pushbtn_int #(
    input  wire                   S_AXI_RREADY,
 
    // async I/O
-   input  wire                   PUSHBTN_IN,
+   input  wire                   PUSHBTN_IN, // active high, pressed=high depressed=low
    output wire                   INTERRUPT_OUT
 );
 
-assign INTERRUPT_OUT = 1'b0;
+reg         sw_clear_interrupt; // only for level interrupt
+reg         pushbtn_in_meta;
+reg [2:0]   pushbtn_in_ffs;
+reg         interrupt_out_ff;
+
+// assuming 100 MHz S_AXI_ACLK
+reg [19:0]  pushbtn_change_count;
+
+always @(posedge S_AXI_ACLK or posedge S_AXI_ARESETN) begin
+   if (~S_AXI_ARESETN) begin
+      pushbtn_in_meta <= 'b0;
+      pushbtn_in_ffs  <= 'b0;
+      interrupt_out_ff <= ((INTERRUPT_TYPE=="LEVEL_LOW")||(INTERRUPT_TYPE=="EDGE_FALLING")) ? 1'b1 : 1'b0;
+      pushbtn_change_count <= 'b0;
+   end else begin
+      pushbtn_in_meta <= PUSHBTN_IN;
+      pushbtn_in_ffs  <= {pushbtn_in_ffs[1:0], pushbtn_in_meta};
+
+      if (pushbtn_change_count!=0) begin
+         pushbtn_change_count <= pushbtn_change_count + 1;
+      end
+      if ((pushbtn_change_count==0)&&(pushbtn_in_ffs[2]==1'b0)&&(pushbtn_in_ffs[1]==1'b1)) begin
+         pushbtn_change_count <= 'h1;
+      end
+
+      if ((INTERRUPT_TYPE=="LEVEL_HIGH")||(INTERRUPT_TYPE=="LEVEL_LOW")) begin
+         if (pushbtn_change_count==1'b1) begin
+            interrupt_out_ff <= (INTERRUPT_TYPE=="LEVEL_HIGH") ? 1'b1 : 1'b0;
+         end
+         if (sw_clear_interrupt) begin
+            interrupt_out_ff <= (INTERRUPT_TYPE=="LEVEL_HIGH") ? 1'b0 : 1'b1;
+         end
+      end
+
+      if ((INTERRUPT_TYPE=="EDGE_RISING")||(INTERRUPT_TYPE=="EDGE_FALLING")) begin
+         interrupt_out_ff <= (INTERRUPT_TYPE=="EDGE_FALLING") ? 1'b1 : 1'b0;
+         if (pushbtn_change_count==1'b1) begin
+            interrupt_out_ff <= (INTERRUPT_TYPE=="EDGE_FALLING") ? 1'b0 : 1'b1;
+         end
+      end
+
+   end
+end
+
+assign INTERRUPT_OUT = interrupt_out_ff;
+
+////////////////////////////////////////////////////////////////////////////////
+// AXI accesses
+////////////////////////////////////////////////////////////////////////////////
 
 reg  [S_AXI_ADDRW-1:0]  axi_awaddr;
 reg                     axi_awready;
@@ -140,6 +191,7 @@ assign slv_reg_wren = axi_wready & axi_awready & S_AXI_WVALID & S_AXI_AWVALID;
 integer byteidx;
 
 always @(posedge S_AXI_ACLK) begin
+   sw_clear_interrupt <= 'b0;
    if (slv_reg_wren) begin
       case (axi_awaddr[ADDR_MSB:ADDR_LSB])
          2'h0 : begin
@@ -148,6 +200,9 @@ always @(posedge S_AXI_ACLK) begin
                   slv_reg0[(byteidx*8)+:8] <= S_AXI_WDATA[(byteidx*8)+:8];
                end
             end
+            // always keep bit [0] cleared
+            slv_reg0[0] <= 1'b0;
+            sw_clear_interrupt <= S_AXI_WDATA[0];
          end
          2'h1 : begin
             for (byteidx=0; byteidx<(S_AXI_DATAW/8); byteidx=byteidx+1) begin
@@ -180,6 +235,7 @@ always @(posedge S_AXI_ACLK) begin
       slv_reg1 <= 'b0;
       slv_reg2 <= 'b0;
       slv_reg3 <= 'b0;
+      sw_clear_interrupt <= 'b0;
    end
 end
 
@@ -214,7 +270,7 @@ end
 
 always @(*) begin
    case (axi_araddr[ADDR_MSB:ADDR_LSB])
-      2'h0: reg_data_out <= {slv_reg0[31:1], PUSHBTN_IN};
+      2'h0: reg_data_out <= slv_reg0[31:0];
       2'h1: reg_data_out <= slv_reg1;
       2'h2: reg_data_out <= slv_reg2;
       2'h3: reg_data_out <= slv_reg3;

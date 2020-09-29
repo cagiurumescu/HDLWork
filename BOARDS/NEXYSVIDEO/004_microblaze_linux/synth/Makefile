@@ -10,5 +10,6 @@ build: design_top.xpr
 
 clean:
 	rm -rf design_top.* .Xil vivado*.jou vivado*.str vivado*.log
+	cd ../bd/design_top_bd; rm -rf *.bmm *.bxml *.xdc hw_handoff ip ipshared sim synth
 
 .PHONY: gen build clean
