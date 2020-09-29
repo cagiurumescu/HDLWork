@@ -733,12 +733,6 @@ CONFIG_bridge-utils=y
 # CONFIG_bridge-utils-dbg is not set
 
 #
-# apps 
-#
-# CONFIG_gpio-demo is not set
-# CONFIG_peekpoke is not set
-
-#
 # modules 
 #
 CONFIG_test-module=y
@@ -746,6 +740,8 @@ CONFIG_test-module=y
 #
 # user packages 
 #
+# CONFIG_gpio-demo is not set
+# CONFIG_peekpoke is not set
 
 #
 # PetaLinux RootFS Settings

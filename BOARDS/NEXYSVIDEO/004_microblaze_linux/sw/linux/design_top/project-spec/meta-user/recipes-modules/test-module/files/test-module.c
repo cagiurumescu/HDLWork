@@ -54,6 +54,9 @@ struct test_module_local {
 static irqreturn_t test_module_irq(int irq, void *lp)
 {
 	printk("test-module interrupt\n");
+   // clear interrupt (only level interrupts) bit[0] of reg0
+   *((unsigned long *)((struct test_module_local *)lp)->base_addr) = 1;
+
 	return IRQ_HANDLED;
 }
 
@@ -118,6 +121,10 @@ static int test_module_probe(struct platform_device *pdev)
 		(unsigned int __force)lp->mem_start,
 		(unsigned int __force)lp->base_addr,
 		lp->irq);
+   printk("VAL[0]=%08x\n", *((unsigned long *)lp->base_addr));
+   printk("VAL[1]=%08x\n", *((unsigned long *)lp->base_addr+1));
+   printk("VAL[2]=%08x\n", *((unsigned long *)lp->base_addr+2));
+   printk("VAL[3]=%08x\n", *((unsigned long *)lp->base_addr+3));
 	return 0;
 error3:
 	free_irq(lp->irq, lp);
@@ -143,7 +150,7 @@ static int test_module_remove(struct platform_device *pdev)
 
 #ifdef CONFIG_OF
 static struct of_device_id test_module_of_match[] = {
-	{ .compatible = "vendor,test-module", },
+	{ .compatible = "xlnx,pushbtn-int-1.0", },
 	{ /* end of list */ },
 };
 MODULE_DEVICE_TABLE(of, test_module_of_match);

@@ -10,5 +10,5 @@ else
    petalinux-build -x mrproper
    petalinux-config --get-hw-description=../../hdf --silentconfig
 fi
-#petalinux-build
+petalinux-build
 #petalinux-boot --jtag --kernel --fpga -v
