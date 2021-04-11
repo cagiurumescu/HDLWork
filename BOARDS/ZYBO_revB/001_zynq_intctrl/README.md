@@ -1,6 +1,6 @@
 # Example on using interrupts with Zynq (level or edge interrupts)
 ## Notes
-* Project uses Vivado 2019.1.
+* Project uses Vivado 2019.1 or 2020.1
 * If interrupt ports are made external to block design some UI sensitivity 
 options get reset. Use the command below to force a certain interrupt type:
 > set_property CONFIG.SENSITIVITY LEVEL_HIGH|LEVEL_LOW|EDGE_RISING|EDGE_FALLING [get_bd_ports IRQ_F2Px]
