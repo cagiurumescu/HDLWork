@@ -1,9 +1,9 @@
-[submodule "BOARDS/PlutoSDR/BOARDS/PlutoSDR/no-OS"]
-	path = BOARDS/PlutoSDR/BOARDS/PlutoSDR/no-OS
-	url = https://github.com/analogdevicesinc/no-OS.git
 [submodule "BOARDS/PlutoSDR/no-OS"]
 	path = BOARDS/PlutoSDR/no-OS
 	url = git@github.com:cagiurumescu/no-OS.git
 [submodule "BOARDS/PlutoSDR/hdl"]
 	path = BOARDS/PlutoSDR/hdl
 	url = git@github.com:cagiurumescu/hdl.git
+[submodule "common/hdmi"]
+	path = common/hdmi
+	url = git@github.com:cagiurumescu/hdmi.git
