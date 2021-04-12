@@ -26,3 +26,4 @@ if { [lindex [version] 1]==2020.1 } {
    importsources -name $DNAME_APP -path ../src/$DNAME_APP
    app build -name $DNAME_APP
 }
+file copy -force ./$DNAME_APP/Debug/$DNAME_APP.elf ./output
