@@ -1,0 +1,17 @@
+*/*/config.old
+*/*/rootfs_config.old
+build/
+images/linux/
+pre-built/linux/
+.petalinux/*
+!.petalinux/metadata
+*.o
+*.jou
+*.log
+/components/plnx_workspace
+/components/yocto
+**/hw-description/ps7_init*
+**/hw-description/*.bit
+**/hw-description/*.xsa
+**/peekpoke/
+**/gpio-demo/

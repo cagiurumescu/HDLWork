@@ -1,0 +1,11 @@
+/include/ "system-conf.dtsi"
+/ {
+   plirq {
+      compatible = "xlnx,plirqdrv";
+      /*irq61=F2P0=29 level-high*/
+      /*irq62=F2P1=30 edge-high*/
+      interrupt-names = "f2p0","f2p1";
+      interrupt-parent = <&intc>;
+      interrupts = <0 29 4>,<0 30 1>;
+   };
+};
