@@ -11,6 +11,7 @@ endif
 $(PETADIR):
 	petalinux-create --type project --template zynq --name $@
 	cd $@ && petalinux-create --type modules --name plirqdrv --enable
+	cd $@ && petalinux-create --type apps --name plirqapp --enable
 
 config: $(PETADIR)
 	cd $(PETADIR) && petalinux-config --get-hw-description=../hdf --silentconfig
@@ -41,4 +42,4 @@ partsdcard:
 	sudo mkfs.vfat -n BOOT /dev/mmcblk0p1
 	sudo mkfs.ext4 -L rootfs /dev/mmcblk0p2
 
-.PHONY: config build
+.PHONY: config build sdcopy partsdcard

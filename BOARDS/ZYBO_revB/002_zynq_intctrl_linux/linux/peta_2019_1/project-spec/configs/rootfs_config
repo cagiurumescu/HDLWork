@@ -3937,6 +3937,11 @@ CONFIG_imagefeature-hwcodecs=y
 # CONFIG_imagefeature-debug-tweaks is not set
 
 #
+# apps 
+#
+CONFIG_plirqapp=y
+
+#
 # modules 
 #
 CONFIG_plirqdrv=y

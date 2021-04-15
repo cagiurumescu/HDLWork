@@ -3999,6 +3999,11 @@ CONFIG_imagefeature-debug-tweaks=y
 # CONFIG_auto-login is not set
 
 #
+# apps 
+#
+CONFIG_plirqapp=y
+
+#
 # modules 
 #
 CONFIG_plirqdrv=y

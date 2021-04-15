@@ -26,3 +26,5 @@ interrupts are close together. Also, unclear if closeness in time has any
 relation to F2P[0] not being detected. The situation is troubling as 
 different devices may generate this interrupt pattern and thus one device 
 would never trigger.
+* Has async signaling of interrupts to userspace and detection of which
+interrupt asserted using flags.
